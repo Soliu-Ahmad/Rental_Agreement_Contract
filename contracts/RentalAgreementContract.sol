@@ -2,10 +2,10 @@
 
 pragma solidity ^0.8.27;
 
-import {IERC20} from "ICelo.sol";
+import {IERC20} from "./IMPX.sol";
 
 contract RentalAgreement {
-    
+
     IERC20 public MPXToken;
 
     address owner;
@@ -51,17 +51,9 @@ contract RentalAgreement {
     }
 
     // Function to add a new item for rent
-    function addItem(uint256 _itemId, string memory _description, uint256 _rentalFee, uint256 _securityDeposit) public onlyOwner {
+    function addItem(uint256 _itemId, string memory _description, uint256 _rentalFee, uint256 _securityDeposit) public onlyOwner (_itemId) {
 
-        // items[itemId] = Item({
-        //     itemId: itemId,
-        //     description: description,
-        //     rentalFee: rentalFee,
-        //     securityDeposit: securityDeposit,
-        //     available: true,
-        //     owner: msg.sender
-        // });
-
+      
         Item memory newItem;
 
         newItem.itemId = _itemId;
@@ -72,7 +64,7 @@ contract RentalAgreement {
 
         items[_itemId] = newItem;
         
-        emit ItemAdded(itemId, description, rentalFee, securityDeposit);
+        emit ItemAdded(_itemId, _description, _rentalFee, _securityDeposit);
     }
 
     // Function to set item availability
@@ -92,7 +84,7 @@ contract RentalAgreement {
         address renter = msg.sender;
 
 
-        bool deducted = token.transferFrom(renter, address(this), totalPayment);
+        bool deducted = MPXToken.transferFrom(renter, address(this), totalPayment);
 
         require(deducted, "Token transfer failed");
 
@@ -124,7 +116,7 @@ contract RentalAgreement {
         deposits[renter] -= depositAmount; // Update deposit balance
 
         // Transfer the deposit back to the renter in ERC-20 tokens
-        require(token.transfer(renter, depositAmount), "Token transfer failed");
+        require(MPXToken.transfer(renter, depositAmount), "Token transfer failed");
 
         emit DepositReleased(itemId, renter, depositAmount);
     }
